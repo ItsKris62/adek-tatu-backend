@@ -1,0 +1,20 @@
+---
+deployment:
+  tasks:
+    # 1. Define Deployment Paths & Ensure Node.js 20+ PATH availability on cPanel
+    - export DEPLOYPATH=/home/pvcpvifr/repositories/adek-tatu-backend
+    - export PATH=/opt/cpanel/ea-nodejs20/bin:/usr/local/bin:/usr/bin:/bin:$PATH
+
+    # 2. Copy application files to deployment root (excluding secrets and node_modules)
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH/tmp
+
+    # 3. Install dependencies (including devDependencies needed for TypeScript compilation)
+    - cd $DEPLOYPATH && npm install --no-audit --no-fund
+
+    # 4. Transpile TypeScript to production JavaScript (dist/ directory)
+    - cd $DEPLOYPATH && npm run build
+
+    # 5. Restart Phusion Passenger / cPanel Node.js Application instance
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt
