@@ -1,0 +1,8 @@
+process.env.NODE_ENV = 'test'
+process.env.PORT = '4001'
+process.env.DATABASE_URL = 'postgresql://test_user:test_pass@127.0.0.1:5432/adek_test_db'
+process.env.SESSION_SECRET = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+process.env.DATA_ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+process.env.DATA_HMAC_KEY = 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210'
+process.env.TOTP_ENCRYPTION_KEY = '11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff'
+process.env.FRONTEND_ORIGIN = 'http://localhost:3000'
