@@ -51,6 +51,11 @@ const envSchema = z.object({
   // OpenAPI / Swagger (Disabled by default in production)
   ENABLE_SWAGGER: z.string().transform((val) => val === 'true').default('false'),
 
+  // Bot Protection (Cloudflare Turnstile)
+  TURNSTILE_ENABLED: z.string().transform((val) => val === 'true').default('false'),
+  TURNSTILE_SECRET_KEY: z.string().default(''),
+  TURNSTILE_VERIFY_URL: z.string().url().default('https://challenges.cloudflare.com/turnstile/v0/siteverify'),
+
   // Rate Limiting
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
@@ -58,6 +63,8 @@ const envSchema = z.object({
   AUTH_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
   MEMBERSHIP_RATE_LIMIT_MAX: z.coerce.number().default(10),
   MEMBERSHIP_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
+  REPORT_EXPORT_RATE_LIMIT_MAX: z.coerce.number().default(5),
+  REPORT_EXPORT_RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -75,4 +82,17 @@ export function getEnv(): Env {
     parsedEnv = result.data
   }
   return parsedEnv
+}
+
+/**
+ * Returns a Set of allowed frontend origins parsed from FRONTEND_ORIGIN.
+ */
+export function getAllowedOrigins(): Set<string> {
+  const env = getEnv()
+  const raw = env.FRONTEND_ORIGIN || ''
+  const origins = raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+  return new Set(origins)
 }

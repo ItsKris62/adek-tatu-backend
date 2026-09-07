@@ -31,6 +31,12 @@ export class AuthorizationError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message = 'Access forbidden.', code = 'FORBIDDEN') {
+    super(message, 403, code)
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message = 'The requested resource was not found.') {
     super(message, 404, 'NOT_FOUND')

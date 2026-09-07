@@ -5,7 +5,8 @@ import { normalizeEmail, normalizePhone } from '../../utils/normalize'
 import { createIdHmac, maskId, hashConsentText } from '../../security/hashing'
 import { encryptData } from '../../security/encryption'
 import { generateApplicationReference } from '../../utils/references'
-import { ConflictError, NotFoundError } from '../../utils/errors'
+import { ConflictError, NotFoundError, ValidationError } from '../../utils/errors'
+import { verifyTurnstileToken } from '../../security/botProtection'
 import type { SubmitMembershipInput } from './membershipSchemas'
 
 // Active statuses that block duplicate submissions in the demo
@@ -17,8 +18,22 @@ const ACTIVE_BLOCKING_STATUSES: string[] = [
 ]
 
 export async function submitApplication(
-  input: SubmitMembershipInput
+  input: SubmitMembershipInput,
+  clientIp?: string
 ): Promise<{ reference: string; status: string; submittedAt: Date }> {
+  // 1. Honeypot check: If the hidden honeypot field is filled, reject immediately
+  if (input.website && input.website.trim().length > 0) {
+    throw new ValidationError('Invalid submission received.')
+  }
+
+  // 2. Server-side Bot Protection (Turnstile verification)
+  const turnstileResult = await verifyTurnstileToken(input.turnstileToken, clientIp)
+  if (!turnstileResult.success) {
+    throw new ValidationError(
+      'Security verification failed. Please complete the verification challenge and try again.'
+    )
+  }
+
   const db = getDb()
 
   const normalizedEmail = normalizeEmail(input.email)

@@ -40,7 +40,7 @@ export async function membershipRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store')
       const validatedInput = submitMembershipSchema.parse(request.body)
-      const result = await submitApplication(validatedInput)
+      const result = await submitApplication(validatedInput, request.ip)
 
       return reply.status(201).send({
         success: true,

@@ -14,6 +14,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "admin:create": "tsx scripts/create-admin.ts",
+    "admin:reset-password": "tsx scripts/reset-admin-password.ts",
+    "admin:reset-mfa": "tsx scripts/reset-admin-mfa.ts",
+    "admin:revoke-sessions": "tsx scripts/revoke-admin-sessions.ts",
+    "admin:disable": "tsx scripts/disable-admin.ts",
+    "admin:enable": "tsx scripts/enable-admin.ts",
     "smoke": "tsx scripts/smoke-public.ts",
     "smoke:admin": "tsx scripts/smoke-admin.ts"
   },

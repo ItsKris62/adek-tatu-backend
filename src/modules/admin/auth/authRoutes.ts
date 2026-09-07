@@ -3,6 +3,7 @@ import { loginSchema, mfaVerifySchema } from './authSchemas'
 import { loginAdmin, verifyMfaAndLogin, logoutAdmin } from './authService'
 import { requireAuth } from '../../../plugins/auth'
 import { getEnv } from '../../../config/env'
+import { generateCsrfTokenForSession } from '../../../security/csrf'
 
 function setSessionCookie(reply: FastifyReply, token: string) {
   const env = getEnv()
@@ -122,6 +123,30 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
           role: user.role,
           mfaEnabled: user.mfaEnabled,
           lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
+        },
+      })
+    }
+  )
+
+  // Get Session-Bound CSRF Token
+  app.get(
+    '/csrf',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        description: 'Get active session CSRF token for state-changing operations',
+        tags: ['Admin Auth'],
+      },
+    },
+    async (request, reply) => {
+      reply.header('Cache-Control', 'no-store')
+      const token = request.sessionToken!
+      const csrfToken = generateCsrfTokenForSession(token)
+
+      return reply.send({
+        success: true,
+        data: {
+          csrfToken,
         },
       })
     }

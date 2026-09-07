@@ -13,6 +13,9 @@ export const submitMembershipSchema = z.object({
   }),
   consentVersion: z.string().default('v1.0-demo'),
   consentText: z.string().optional(),
+  // Anti-bot controls (never persisted to database or logs)
+  turnstileToken: z.string().optional(),
+  website: z.string().optional(), // Honeypot field - must be empty
 })
 
 export type SubmitMembershipInput = z.infer<typeof submitMembershipSchema>

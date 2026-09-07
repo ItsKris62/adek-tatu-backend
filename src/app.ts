@@ -15,6 +15,8 @@ import { newsRoutes, adminNewsRoutes } from './modules/news/newsRoutes'
 import { leadershipRoutes, adminLeadershipRoutes } from './modules/leadership/leadershipRoutes'
 import { documentRoutes, adminDocumentRoutes } from './modules/documents/documentRoutes'
 import { siteContentRoutes, adminSiteContentRoutes } from './modules/site-content/siteContentRoutes'
+import { reportsRoutes } from './modules/admin/reports/reportsRoutes'
+import { membersRoutes } from './modules/admin/reports/membersRoutes'
 
 export async function buildApp(): Promise<FastifyInstance> {
   const env = getEnv()
@@ -102,6 +104,8 @@ export async function buildApp(): Promise<FastifyInstance> {
         async (admin) => {
           await admin.register(authRoutes, { prefix: '/auth' })
           await admin.register(adminApplicationRoutes, { prefix: '/applications' })
+          await admin.register(reportsRoutes, { prefix: '/reports' })
+          await admin.register(membersRoutes, { prefix: '/members' })
           await admin.register(dashboardRoutes, { prefix: '/dashboard' })
           await admin.register(auditRoutes, { prefix: '/audit-logs' })
           await admin.register(adminUserRoutes, { prefix: '/users' })
