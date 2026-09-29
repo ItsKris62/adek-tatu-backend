@@ -7,7 +7,7 @@ import { encryptData } from '../../security/encryption'
 import { generateApplicationReference } from '../../utils/references'
 import { ConflictError, NotFoundError, ValidationError } from '../../utils/errors'
 import { verifyTurnstileToken } from '../../security/botProtection'
-import type { SubmitMembershipInput } from './membershipSchemas'
+import type { SubmitMembershipInput, VerifyMembershipInput } from './membershipSchemas'
 
 // Active statuses that block duplicate submissions in the demo
 const ACTIVE_BLOCKING_STATUSES: string[] = [
@@ -136,4 +136,68 @@ export async function getApplicationStatus(
   }
 
   return app
+}
+
+function normalizeNameForMatch(name: string): string {
+  return name.trim().replace(/\s+/g, ' ').toLowerCase()
+}
+
+export async function verifyApprovedMembership(
+  input: VerifyMembershipInput
+): Promise<
+  | {
+      isMember: true
+      member: {
+        fullName: string
+        membershipNumber: string
+        dateJoined: Date
+        status: 'APPROVED'
+      }
+    }
+  | { isMember: false }
+> {
+  if (input.website && input.website.trim().length > 0) {
+    throw new ValidationError('Invalid verification request.')
+  }
+
+  const db = getDb()
+  const idDocumentHmac = createIdHmac(input.idNumber)
+  const normalizedPhone = normalizePhone(input.phone)
+  const normalizedInputName = normalizeNameForMatch(input.fullName)
+
+  const candidates = await db
+    .select({
+      fullName: membershipApplications.fullName,
+      membershipNumber: membershipApplications.applicationReference,
+      dateJoined: membershipApplications.reviewedAt,
+      submittedAt: membershipApplications.submittedAt,
+      status: membershipApplications.status,
+    })
+    .from(membershipApplications)
+    .where(
+      and(
+        eq(membershipApplications.status, 'APPROVED'),
+        eq(membershipApplications.idDocumentHmac, idDocumentHmac),
+        eq(membershipApplications.normalizedPhone, normalizedPhone)
+      )
+    )
+    .limit(3)
+
+  const member = candidates.find(
+    (candidate) => normalizeNameForMatch(candidate.fullName) === normalizedInputName
+  )
+
+  if (!member) {
+    return { isMember: false }
+  }
+
+  return {
+    isMember: true,
+    member: {
+      fullName: member.fullName,
+      membershipNumber: member.membershipNumber,
+      dateJoined: member.dateJoined ?? member.submittedAt,
+      status: 'APPROVED',
+    },
+  }
 }

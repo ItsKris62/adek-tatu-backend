@@ -23,3 +23,12 @@ export type SubmitMembershipInput = z.infer<typeof submitMembershipSchema>
 export const statusLookupParamsSchema = z.object({
   reference: z.string().min(5, 'Invalid application reference').max(64),
 })
+
+export const verifyMembershipSchema = z.object({
+  fullName: z.string().min(2, 'Full name is required').max(255),
+  phone: z.string().min(8, 'Enter a valid phone number').max(50),
+  idNumber: z.string().min(4, 'National ID number is required').max(30),
+  website: z.string().optional(),
+})
+
+export type VerifyMembershipInput = z.infer<typeof verifyMembershipSchema>
